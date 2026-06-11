@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GetAI Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      background-color: #f8fafc;
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(37, 99, 235, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.03) 1px, transparent 1px);
+      background-size: 20px 20px;
+      pointer-events: none;
+      z-index: -1;
+      animation: scrollBackground 20s linear infinite;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+    @keyframes scrollBackground {
+      0% {
+        background-position: 0 0;
+      }
+      100% {
+        background-position: 20px 20px;
+      }
+    }
+    .hero {
+      background: linear-gradient(rgba(31, 41, 55, 0.85), rgba(31, 41, 55, 0.85)), url('https://images.unsplash.com/photo-1677442136019-21780ecad995?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      text-align: center;
+      padding: 6rem 1rem;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 1.5s ease-in;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      opacity: 0.9;
+      animation: fadeIn 2s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .main-nav {
+      display: flex;
+      justify-content: center;
+      background: #111827;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .main-nav a {
+      color: white;
+      margin: 0 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+    .main-nav a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    section {
+      padding: 2rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      scroll-margin-top: 5rem;
+    }
+    section h2 {
+      margin-top: 0;
+      padding-top: 1rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .flip-card {
+      background-color: transparent;
+      width: 100%;
+      height: 140px;
+      perspective: 1000px;
+      cursor: pointer;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      transform-style: preserve-3d;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: pan-y;
+    }
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      will-change: transform;
+      -webkit-transform-style: preserve-3d;
+    }
+    .flip-card.flipped .flip-card-inner,
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      overflow: hidden;
+      box-sizing: border-box;
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+    }
+    .flip-card-front {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1f2937;
+      border: 1px solid rgba(37, 99, 235, 0.1);
+      z-index: 2;
+      transform: rotateY(0deg);
+    }
+    .flip-card-back {
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+      color: white;
+      transform: rotateY(180deg);
+      z-index: 1;
+    }
+    .flip-card-front h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #2563eb;
+      font-weight: 600;
+      line-height: 1.3;
+      padding: 0.5rem;
+      word-wrap: break-word;
+      transform: translateZ(20px);
+    }
+    .flip-card-back p {
+      margin: 0;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: #e5e7eb;
+      padding: 0.5rem;
+      word-wrap: break-word;
+      transform: translateZ(20px);
+    }
+    .tech-tags {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      padding: 0 0.5rem;
+      z-index: 3;
+      transform: translateZ(10px);
+    }
+    .tech-tag {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.15rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      color: #e5e7eb;
+      white-space: nowrap;
+    }
+    .research-list {
+      margin: 1rem 0 0 1.5rem;
+      padding: 0;
+      list-style: disc inside;
+      font-size: 1.1rem;
+      color: #374151;
+    }
+    .research-list li {
+      margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+    }
+    .about-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .about-col {
+      flex: 1 1 300px;
+      min-width: 0;
+    }
+    .about-img {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 10px;
+    }
+    .about-img::before {
+      content: '';
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.03));
+      z-index: -1;
+    }
+    .profile-pic {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+      background: #f3f4f6;
+      position: relative;
+      z-index: 1;
+    }
+    .profile-pic:hover {
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
+      border-color: #2563eb;
+    }
+    .about-contact {
+      font-size: 1.05rem;
+      color: #374151;
+    }
+    .about-contact a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .about-contact a:hover {
+      text-decoration: underline;
+    }
+    .education-section, .research-section {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .education-section:hover, .research-section:hover {
+      transform: translateY(-2px);
+    }
+    .education-section h3, .research-section h3 {
+      color: #1f2937;
+      margin-top: 0;
+      margin-bottom: 1.2rem;
+      font-size: 1.4rem;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+    .education-list, .research-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .education-list li {
+      margin-bottom: 1.2rem;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+    .education-list li:last-child {
+      margin-bottom: 0;
+    }
+    .education-list li::before {
+      content: "•";
+      color: #2563eb;
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+    .education-list strong {
+      color: #1f2937;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .education-list span {
+      color: #4b5563;
+      font-size: 0.95rem;
+    }
+    .research-list li {
+      margin-bottom: 0.8rem;
+      padding-left: 1.5rem;
+      position: relative;
+      color: #4b5563;
+    }
+    .research-list li::before {
+      content: "→";
+      color: #2563eb;
+      position: absolute;
+      left: 0;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 0.5rem;
+      }
+      body::before {
+        background-size: 15px 15px;
+      }
+      .card-grid {
+        grid-template-columns: repeat(3, minmax(80px, 1fr));
+        gap: 0.5rem;
+        padding: 0.25rem;
+      }
+      .main-nav {
+        flex-wrap: wrap;
+        padding: 0.5rem;
+      }
+      .main-nav a {
+        margin: 0.25rem;
+        font-size: 1rem;
+        padding: 0.4rem 0.8rem;
+      }
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      .hero p {
+        font-size: 1rem;
+      }
+      section {
+        padding: 1rem 0;
+      }
+      .about-row {
+        gap: 1rem;
+      }
+      .about-col {
+        flex: 1 1 100%;
+      }
+      .education-section, .research-section {
+        padding: 1.25rem;
+      }
+      .about-img {
+        margin: 0 auto;
+      }
+      .flip-card {
+        height: 90px;
+        margin-bottom: 0.25rem;
+      }
+      .flip-card-front h3 {
+        font-size: 0.9rem;
+        padding: 0.2rem;
+        line-height: 1.3;
+        font-weight: 600;
+      }
+      .flip-card-back p {
+        font-size: 0.85rem;
+        padding: 0.2rem;
+        line-height: 1.3;
+      }
+      .tech-tag {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.3rem;
+        margin: 0.1rem;
+      }
+    }
+    @media (max-width: 480px) {
+      body::before {
+        background-size: 12px 12px;
+      }
+      .hero h1 {
+        font-size: 2rem;
+      }
+      .container {
+        padding: 0.25rem;
+      }
+      .main-nav a {
+        font-size: 0.9rem;
+        padding: 0.3rem 0.6rem;
+      }
+      .card-grid {
+        grid-template-columns: repeat(3, minmax(60px, 1fr));
+        gap: 0.25rem;
+        padding: 0.15rem;
+      }
+      .flip-card {
+        height: 80px;
+      }
+      .flip-card-front h3 {
+        font-size: 0.85rem;
+        line-height: 1.2;
+        font-weight: 600;
+      }
+      .flip-card-back p {
+        font-size: 0.8rem;
+        line-height: 1.2;
+      }
+      .tech-tag {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.25rem;
+        margin: 0.1rem;
+      }
+    }
+    @media (max-width: 1024px) {
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(200px, 1fr));
+        gap: 1.5rem;
+        padding: 1.25rem;
+      }
+    }
+    @media (max-width: 640px) {
+      .card-grid {
+        grid-template-columns: minmax(200px, 1fr);
+        gap: 1.25rem;
+        padding: 1rem;
+      }
+      .flip-card {
+        height: 130px;
+      }
+    }
+    .course-resources {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    .course-resources strong {
+      color: #1f2937;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .course-resources ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .course-resources li {
+      margin-bottom: 0.25rem;
+    }
+    .course-resources a {
+      color: #2563eb;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .course-resources a:hover {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1>GetAI Lab</h1>
+    <p>Advancing Smart Cities and Sustainability through Artificial Intelligence</p>
+  </header>
+
+  <nav class="main-nav">
+    <a href="#about">Home</a>
+    <a href="#projects">Projects</a>
+    <a href="#team">Research Team</a> 
+    <a href="#publications">Publications</a>
+    <a href="#courses">Courses</a>
+  </nav>
+
+  <main class="container">
+    <section id="about">
+      <h2>About Me</h2>
+      <div class="about-row">
+        <div class="about-col about-img">
+          <img src="my.JPG" alt="Dr. Zeinab Teimoori" class="profile-pic" />
+        </div>
+        <div class="about-col about-contact">
+          <p><strong>Dr. Zeinab Teimoori, P.Eng. </strong><br>Assistant Professor at <a href="https://www.tru.ca/">Thompson Rivers University</a></p>
+          <p>Email: <a href="mailto:zteimoori@tru.ca">zteimoori@tru.ca</a><br>Phone: (250) 828-5107<br>LinkedIn: <a href="https://www.linkedin.com/in/zeinab-teimoori" target="_blank" style="color: #2563eb; font-size: 1.2em;"><i class="fab fa-linkedin"></i></a></p>
+        </div>
+      </div>
+      
+      <div class="about-row" style="margin-top: 2rem;">
+        <div class="about-col">
+          <div class="education-section">
+            <h3>Education</h3>
+            <ul class="education-list">
+              <li>
+                <strong>Ph.D. in Software Engineering</strong>
+                <span>Lakehead University, Canada (2020-2024)</span>
+              </li>
+              <li>
+                <strong>M.Sc. in Software Engineering: Multimedia Systems</strong>
+                <span>University of Tehran, Iran (2015-2018)</span>
+              </li>
+              <li>
+                <strong>B.Sc. in Software Engineering</strong>
+                <span>Shariaty Technical University, Iran (2011-2015)</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="about-col">
+          <div class="research-section">
+            <h3>Research Interests</h3>
+            <ul class="research-list">
+              <li>AI / Generative AI</li>
+              <li>Machine Learning</li>
+              <li>Smart Cities</li>
+              <li>Intelligent Transportation Systems</li>
+              <li>Quantum Computing</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <h2>Research Projects</h2>
+      <div class="card-grid">
+
+         <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>Global Triple Mitigation AI-Based Plan</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Restore the atmosphere’s natural ability to clean itself and slow climate warming much faster.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">AI</span>
+                <span class="tech-tag">ML</span>
+                <span class="tech-tag">Global Warming</span>
+                <span class="tech-tag">GHG Emission</span>
+              </div>
+            </div>
+          </div>
+         </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>Teletechnovision in Pollution</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>TIP is implemented as the capability layer to enable sensing, data collection, spatial analysis and community feedback. </p>
+              <div class="tech-tags">
+                <span class="tech-tag">IoT</span>
+                <span class="tech-tag">Environment</span>
+                <span class="tech-tag">Sustainability</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>Optimized EV Energy Management</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Accurate battery SoC estimation to mitigate range anxiety and optimize energy consumption in electric vehicles.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">AI</span>
+                <span class="tech-tag">ML</span>
+                <span class="tech-tag">Energy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>Mobile Charging Stations</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Enhanced recommendation system combining fixed and mobile charging stations for optimal EV charging solutions.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">AI</span>
+                <span class="tech-tag">Optimization</span>
+                <span class="tech-tag">Smart Grid</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>Electric Bus Management</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Load balance optimization for intelligent public transport systems using AI-driven scheduling and routing.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">AI</span>
+                <span class="tech-tag">Transportation</span>
+                <span class="tech-tag">Optimization</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>EV Path Planning</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>AI-powered navigation considering real-time road conditions, obstacles, and safety parameters for optimal routing.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">AI</span>
+                <span class="tech-tag">Navigation</span>
+                <span class="tech-tag">Safety</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>LLM-Assisted Smart EV</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Leveraging Large Language Models for adaptive recommendations and natural communication in electric vehicles.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">LLM</span>
+                <span class="tech-tag">NLP</span>
+                <span class="tech-tag">AI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>EV Federated Learning</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Energy source recommendation using hybrid federated and transfer learning models for improved accuracy.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">Federated Learning</span>
+                <span class="tech-tag">ML</span>
+                <span class="tech-tag">Privacy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>Quantum ML for E-bus</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Hybrid quantum computing machine learning SoC risk classification for fleet charging request management.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">Quantum Computing</span>
+                <span class="tech-tag">ML</span>
+                <span class="tech-tag">Classification</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <h3>Intelligent Transportation System Standards Analysis</h3>
+            </div>
+            <div class="flip-card-back">
+              <p>Review and analysis of the current Canadian Standards to improve the performance of the Intelligent Transportation Systems.</p>
+              <div class="tech-tags">
+                <span class="tech-tag">Canadian Standards</span>
+                <span class="tech-tag">Transportation</span>
+                <span class="tech-tag">Smart Grids</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+      <section id="team">
+  <div style="margin-top: 3rem; padding: 2rem; background: #f8fafc; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+  
+  <h3 style="color: #1f2937; margin-top: 0; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">
+    Research Team
+  </h3>
+
+  <!-- ================= CURRENT ================= -->
+  <h4 style="color: #111827; margin-bottom: 1rem;">Current Members</h4>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+
+    <div>
+      <h4 style="color: #2563eb; margin-bottom: 1rem;">Graduate Research Assistant</h4>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;">
+          <span style="position: absolute; left: 0; color: #2563eb;">•</span>
+          Buhimila Golani Mboja
+          <div style="color: #4b5563; font-size: 0.9rem;">Environmental Science Department</div>
+        </li>
+        <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;">
+          <span style="position: absolute; left: 0; color: #2563eb;">•</span>
+          Gursahib Singh
+          <div style="color: #4b5563; font-size: 0.9rem;">Computing Science Department</div>
+        </li>
+        <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;">
+          <span style="position: absolute; left: 0; color: #2563eb;">•</span>
+          Thamalee Dasanayake 
+          <div style="color: #4b5563; font-size: 0.9rem;">Computing Science Department</div>
+        </li>
+        <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;">
+          <span style="position: absolute; left: 0; color: #2563eb;">•</span>
+          Asmita Bashyal
+          <div style="color: #4b5563; font-size: 0.9rem;"> Data Science Department</div>
+        </li>
+        
+      </ul>
+    </div>
+
+    <div>
+      <h4 style="color: #2563eb; margin-bottom: 1rem;">Undergraduate Research Assistants</h4>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;">
+          <span style="position: absolute; left: 0; color: #2563eb;">•</span>
+          Brock Young
+          <div style="color: #4b5563; font-size: 0.9rem;">Department of Engineering</div>
+        </li>
+        
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ================= PAST ================= -->
+  <h4 style="color: #111827; margin-bottom: 1rem;">Past Members</h4>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+
+    <div>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        
+        <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;">
+          <span style="position: absolute; left: 0; color: #9ca3af;">•</span>
+         Isaac Latta
+          <div style="color: #6b7280; font-size: 0.9rem;">
+            UG / Department of Engineering / 2026
+          </div>
+        </li>
+
+        <li style="margin-bottom: 0.75rem; padding-left: 1.5rem; position: relative;">
+          <span style="position: absolute; left: 0; color: #9ca3af;">•</span>
+          Victor Okorie
+          <div style="color: #6b7280; font-size: 0.9rem;">
+            UG / Department of Engineering / 2025
+          </div>
+        </li>
+
+      </ul>
+    </div>
+
+  </div>
+
+</div>
+      
+    </section>
+
+    <section id="publications">
+      <h2>Publications</h2>
+      <p style="margin-bottom: 1.5rem;"><a href="https://scholar.google.ca/citations?user=ax3yk_QAAAAJ&hl=en" target="_blank" style="color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+        <i class="fas fa-graduation-cap"></i>
+        Google Scholar Profile
+      </a></p>
+      <ul>
+        <li><strong>2026</strong> - A Comprehensive Review on Electric Vehicles: Technologies, Performance Optimization, and the Role of Quantum Computing (Energies)</li>
+        <li><strong>2026</strong> - A Comparative Hybrid Quantum–Classical Learning Approach for Energy-Efficient Electric Bus Charging (Elsevier AEJ - Submitted)</li>
+        <li><strong>2026</strong> - Performance Analysis of AI Systems in Autonomous Vehicles: A Review (Elsevier NN - Submitted)</li>
+        <li><strong>2026</strong> - Intelligent Transportation System Charging Infrastructure: Standards Analysis (2nd ICIET)</li>
+        <li><strong>2026</strong> - The G2C-DTP Pipeline: A Case Study of Safe and Performant Large Scale Data Migration Between Modern Distributed Storage Systems (2nd ICIET)</li>
+        <li><strong>2026</strong> - Teletechnovision in Pollution: A Communication-Driven IoT Framework for Urban Air Quality Decision Support(2nd ICIET)</li>
+        <li><strong>2025</strong> - LLM-Enabled EV Charging Stations Recommendation (arXiv)</li>
+        <li><strong>2024</strong> - Deep Transfer Learning for Detecting EVs Energy Parameters (IEEE TAI)</li>
+        <li><strong>2024</strong> - Smart Vehicles Recommendation System for AI Communication (IEEE TCE)</li>
+        <li><strong>2024</strong> - User-centric EV Charging Recommendation (IEEE MELECON)</li>
+        <li><strong>2024</strong> - EV Charging Source Recommendation System (NRC STEM Symposium)</li>
+        <li><strong>2024</strong> - Mobile Charging Profit Optimization (IEEE TCE)</li>
+        <li><strong>2022</strong> - Intelligent EV Energy Management Systems Review (Sustainability)</li>
+        <li><strong>2022</strong> - Secure Cloudlet Charging with FL (IEEE TII)</li>
+        <li><strong>2022</strong> - Detecting Review Spammers in Social Media (JADM)</li>
+      </ul>
+    </section>
+
+    <section id="courses">
+      <h2>Courses Taught</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Software Requirements & Specifications</h3>
+          <p>Requirements elicitation, analysis, and management.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+              <li><a href="https://reqview.com" target="_blank">ReqView</a></li>
+              <li><a href="https://visuresolutions.com" target="_blank">Visure</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Software Estimation</h3>
+          <p>Techniques for estimating time, cost, and resources in software projects.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+              <li><a href="https://www.softstarsystems.com/index.html" target="_blank">SystemStar & Costar</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Programming for Engineers</h3>
+          <p>Fundamental and advanced programming concepts with data structures in C++.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+              <li><a href="https://code.visualstudio.com" target="_blank">VSCode</a></li>
+              
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Data Management & IS</h3>
+          <p>Managing and querying structured datasets and information systems.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+             <li><a href="https://www.mysql.com" target="_blank">MySQL</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Database Systems</h3>
+          <p>Design and implementation of SQL & NoSQL databases.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+              <li><a href="https://www.mongodb.com" target="_blank">MongoDB</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h3>OOP with JAVA</h3>
+          <p>Object-oriented principles and design patterns using Java.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+              <li><a href="https://www.eclipse.org" target="_blank">Eclipse</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Web Development</h3>
+          <p>Full-Stack web technologies and best practices.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+              <li><a href="https://en.wikipedia.org/wiki/MEAN_(solution_stack)" target="_blank">MEAN Stack</a></li>
+              <li><a href="https://www.apachefriends.org/index.html" target="_blank">XAMPP</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Operating Systems</h3>
+          <p>Concepts in OS including processes, memory, and file systems.</p>
+          <div class="course-resources">
+            <strong>Resources & Tools:</strong>
+            <ul>
+              <li><a href="https://www.linux.org" target="_blank">Linux</a></li>
+              <li><a href="https://learn.microsoft.com/en-us/windows/terminal/" target="_blank">Windows Terminal</a></li>
+              <li><a href="https://learn.microsoft.com/en-us/powershell/scripting/overview?view=powershell-7.5" target="_blank">Windows PowerShell</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 GetAI Lab</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.flip-card');
+      const isTouchDevice = 'ontouchstart' in window;
+      let touchStartTime;
+      let touchStartY;
+      let currentlyFlipped = null;
+      
+      function unflipAll() {
+        cards.forEach(card => {
+          card.classList.remove('flipped');
+        });
+      }
+      
+      if (isTouchDevice) {
+        cards.forEach(card => {
+          card.addEventListener('touchstart', function(e) {
+            touchStartTime = Date.now();
+            touchStartY = e.touches[0].clientY;
+          });
+          
+          card.addEventListener('touchend', function(e) {
+            const touchEndTime = Date.now();
+            const touchEndY = e.changedTouches[0].clientY;
+            const touchDuration = touchEndTime - touchStartTime;
+            const touchDistance = Math.abs(touchEndY - touchStartY);
+            
+            if (touchDuration < 200 && touchDistance < 10) {
+              e.preventDefault();
+              if (currentlyFlipped === this) {
+                this.classList.remove('flipped');
+                currentlyFlipped = null;
+              } else {
+                unflipAll();
+                this.classList.add('flipped');
+                currentlyFlipped = this;
+              }
+            }
+          });
+        });
+      } else {
+        cards.forEach(card => {
+          card.addEventListener('mouseenter', function() {
+            unflipAll();
+            this.classList.add('flipped');
+            currentlyFlipped = this;
+          });
+          
+          card.addEventListener('mouseleave', function() {
+            this.classList.remove('flipped');
+            currentlyFlipped = null;
+          });
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
